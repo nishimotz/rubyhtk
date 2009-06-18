@@ -60,10 +60,21 @@ if (! -d $resdir ) then
   mkdir -p $resdir
 endif
 
+# wc $scp
+# echo "scp = $scp"
 cat $scp | cut -d "." -f 1 > $tmp
-awk '{printf("'$featdir'/'Mfc'16TS_set'$tset'/'$env'/%s'.mfc'\n", $1)}' $tmp > $tmplist
+# awk '{printf("'$featdir'/'Mfc'16TS_set'$tset'/'$env'/%s'.mfc'\n", $1)}' $tmp 
+# awk '{printf("'$featdir'/'Mfc'16TS_set'$tset'/'$env'/%s'.mfc'\n", $1)}' $tmp >$tmplist
+# /lab/common/src/r-tanemura/SPCAPTCHA/env/baseline_htk/Mfc16TS_setf/clean1/MBN_612Z781A.mfc
+set prefix = "${featdir}/Mfc16TS_set${tset}/${env}/"
+set ruby_script = "puts '${prefix}' + $_.chomp + '.mfc'"
+echo $ruby_script
+
+cat $scp | cut -d "." -f 1 | ruby -n -e $ruby_script
+# > $tmplist
 
 echo running HVite
+echo "HVide options : -H $macros -H $models -S $tmplist -C $cfg -l '*' -i $rcgdlbl $flags $dict $wordlistsp"
 $HVite -T 1 -D\
        -H $macros\
        -H $models\

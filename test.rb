@@ -15,24 +15,22 @@ dict         = "#{envdir}/lib/dict.test"
 tset         = 'f'
 
 # models
-modelname    = ARGV[0] #clean
-env          = ARGV[1] #psl
+modelname    = ARGV[0] ||= 'clean'
+env          = ARGV[1] ||= 'psl'
 
-puts "modelname #{modelname}"
-puts "env #{env}"
+puts "modelname #{modelname} / env #{env}"
 
 # script file and label file
 system "mkdir -p scripts"
-scp = "scripts/TS_captcha.scp"
+#scp = "scripts/TS_captcha.scp"
 
-# ls ../speechdata/train/#{env}/*.wav | sed -e "s/wav\*/mfc/" | cut -d "/" -f 5> $scp
-puts "finding #{datadir}/testa/#{env}"
+#puts "finding wav in #{datadir}/testa/#{env}"
 
-File.open(scp, "w") do |outfile|
-  File.popen("find #{datadir}/testa/#{env} -name '*.wav' | sed -e \"s/wav/mfc/\"").each do |f|
-    outfile.puts f.chomp.split(/\//)[-1]
-  end
-end
+#File.open(scp, "w") do |outfile|
+#  File.popen("find #{datadir}/testa/#{env} -name '*.wav' | sed -e \"s/wav/mfc/\"").each do |f|
+#    outfile.puts f.chomp.split(/\//)[-1]
+#  end
+#end
 
 # making label
 now          = Time.now.strftime("%Y%m%d%H%M%S")
@@ -60,21 +58,20 @@ HResults     = "#{htkdir}/HResults"
 
 system "mkdir -p #{resdir}"
 
-# wc $scp
-# echo "scp = $scp"
-#cat $scp | cut -d "." -f 1 > $tmp
-# awk '{printf("'$featdir'/'Mfc'16TS_set'$tset'/'$env'/%s'.mfc'\n", $1)}' $tmp 
-# awk '{printf("'$featdir'/'Mfc'16TS_set'$tset'/'$env'/%s'.mfc'\n", $1)}' $tmp >$tmplist
-# /lab/common/src/r-tanemura/SPCAPTCHA/env/baseline_htk/Mfc16TS_setf/clean1/MBN_612Z781A.mfc
-prefix = "#{featdir}/Mfc16TS_set#{tset}/#{env}/"
-#ruby_script = "puts '#{prefix}' + $_.chomp + '.mfc'"
-#echo $ruby_script
+#prefix = "#{featdir}/Mfc16TS_set#{tset}/#{env}/"
+#File.open(tmplist, "w") do |outfile|
+#  File.open(scp).each do |line|
+#    outfile.puts prefix + line.chomp.split(/\./)[0] + '.mfc'
+#  end
+#end
 
+mfc_dir = "/lab/common/src/r-tanemura/SPCAPTCHA/env/baseline_htk/Mfc16TS_setf/snd_ld_wn_07/" 
 File.open(tmplist, "w") do |outfile|
-  File.open(scp).each do |line|
-    outfile.puts prefix + line.chomp.split(/\./)[0] + '.mfc'
+  File.popen("find #{mfc_dir} -name '*.mfc'").each do |f|
+    outfile.puts f.chomp
   end
 end
+
 
 cmd = "#{HVite} -T 1 -D -H #{macros} -H #{models} -S #{tmplist} -C #{cfg} -w #{net} -l '*' -i #{rcgdlbl}                #{flags} #{dict} #{wordlistsp} >& #{log}"
 puts cmd
