@@ -25,7 +25,8 @@ mkdir -p scripts
 set scp          = scripts/TS_captcha.scp
 
 # ls ../speechdata/train/${env}/*.wav | sed -e "s/wav\*/mfc/" | cut -d "/" -f 5> $scp
-find ${datadir}/testa/${env} -name '*.wav' | sed -e "s/wav\*/mfc/" | cut -d "/" -f 5> $scp
+echo "finding ${datadir}/testa/${env}"
+find ${datadir}/testa/${env} -name '*.wav' | sed -e "s/wav/mfc/" | ruby -n -e 'puts $_.chomp.split(/\//)[-1]' > $scp
 
 # making label
 set now          = `date +%Y%m%d%H%M%S`
