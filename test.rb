@@ -33,7 +33,7 @@ system "mkdir -p scripts"
 #end
 
 # making label
-now          = Time.now.strftime("%Y%m%d%H%M%S")
+now          = Time.now.strftime("%Y%m%d-%H%M%S")
 lbl          = "#{envdir}/labels/N1.mlf"
 
 # default parameter
@@ -71,7 +71,6 @@ File.open(tmplist, "w") do |outfile|
     outfile.puts f.chomp
   end
 end
-
 
 cmd = "#{HVite} -T 1 -D -H #{macros} -H #{models} -S #{tmplist} -C #{cfg} -w #{net} -l '*' -i #{rcgdlbl}                #{flags} #{dict} #{wordlistsp} >& #{log}"
 puts cmd
