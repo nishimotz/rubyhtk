@@ -5,6 +5,8 @@
 require 'fileutils'
 require 'protohmm'
 
+WORDS = %w(one two three four five six seven eight nine oh zero sil)
+
 task :default => [:hcopy_script] do end
 
 desc "create hcopy.script"
@@ -28,17 +30,11 @@ end
 desc "create proto"
 task :proto do 
   FileUtils.mkdir_p "_proto"
-  %w(one two three four five six seven eight nine oh zero sil).each do |model|
+  WORDS.each do |model|
     num_states = 20
     vec_size = 39
     protohmm model, "_proto", num_states, vec_size 
   end
-end
-
-desc "hinit"
-task :hinit do
-#  w = "hai"
-#  sh "HInit -S _trainlist -M hmm0 -H _proto/#{w}.hmm -l #{w} -L label #{w}"
 end
 
 desc "trainlist"
@@ -71,8 +67,28 @@ task :label do
   end
 end
 
+desc "___ hinit"
+task :hinit do
+  FileUtils.mkdir_p "_hmm0"
+  sh "HInit  -L _label -S _trainlist_even -H _proto/one -M _hmm0 -l one one"
+end
+
+desc "hcompv"
+task :hcompv do
+  FileUtils.mkdir_p "_hmm0"
+  WORDS.each do |w|
+    sh "HCompV -m -S _trainlist_even -M _hmm0 _proto/#{w}"
+  end
+end
+
+desc "___ hrest"
+task :hrest do
+  FileUtils.mkdir_p "_hmm0"
+  sh "HRest  -L _label -S _trainlist_even -H _proto/one -M _hmm0 -l one one"
+end
+
 desc "herest"
 task :herest do
-  FileUtils.mkdir_p "_hmm0"
-  sh "HERest -C config.herest -L _label -S _trainlist_even -d _proto -M _hmm0 models"
+  FileUtils.mkdir_p "_hmm1"
+  sh "HERest -L _label -S _trainlist_even -d _hmm0 -M _hmm1 -C config.herest models"
 end
