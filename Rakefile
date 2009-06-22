@@ -5,34 +5,48 @@
 require 'fileutils'
 require 'protohmm'
 
+# DATADIR = "../2009jun18/0.7"
+DATADIR = "../../censrec4/clean1"
+
 WORDS = %w(one two three four five six seven eight nine oh zero sil)
 
-task :default => [:hcopy_script] do end
+# task :default => [:hcopy_script] do end
 
-desc "create hcopy.script"
-task :hcopy_script do
+desc "prepare directories"
+task :prepare_dir do 
   FileUtils.mkdir_p "_script"
   FileUtils.mkdir_p "_mfcc"
+  FileUtils.mkdir_p "_label"
+  FileUtils.mkdir_p "_proto"
+  FileUtils.mkdir_p "_hmm0"
+  FileUtils.mkdir_p "_hmm1"
+end
+
+desc "create hcopy.script"
+task :hcopy_script => [:prepare_dir] do
   s = "_script/hcopy.script"
-  datadir = "../2009jun18/0.7"
   File.open(s, "w") do |outfile|
-    Dir.glob("#{datadir}/*.wav").sort.each do |f|
+    Dir.glob("#{DATADIR}/*.wav").sort.each do |f|
       outfile.puts f + " ./_mfcc/" + f.split(/\//)[-1].gsub(/\.wav/, '.mfc')
     end
   end
 end
 
 desc "create mfcc data"
-task :mfcc do
+task :mfcc => [:hcopy_script] do
   sh "HCopy -C config.hcopy -S _script/hcopy.script"
 end
 
 desc "trainlist"
 task :trainlist do
-  File.open("_trainlist_even", "w") do |outfile|
-    Dir.glob("_mfcc/*.mfc").sort.each_with_index do |f,i|
-      if i % 2 == 0
-        outfile.puts f
+  File.open("_script/trainlist0", "w") do |outfile0|
+    File.open("_script/trainlist1", "w") do |outfile1|
+      Dir.glob("_mfcc/*.mfc").sort.each_with_index do |f,i|
+        if i % 2 == 0
+          outfile0.puts f
+        else 
+          outfile1.puts f
+        end
       end
     end
   end
@@ -40,7 +54,6 @@ end
 
 desc "label"
 task :label do
-  FileUtils.mkdir_p "_label"
   Dir.glob("_mfcc/*.mfc").sort.each_with_index do |f,i|
     name = f.split(/\//)[-1].gsub(/\.mfc/, '')
     File.open("_label/#{name}.lab", "w") do |outfile|
@@ -59,7 +72,6 @@ end
 
 desc "___ hinit"
 task :hinit do
-  FileUtils.mkdir_p "_hmm0"
   sh "HInit  -L _label -S _trainlist_even -H _proto/one -M _hmm0 -l one one"
 end
 
@@ -67,29 +79,26 @@ desc "create proto"
 task :proto do 
   num_states = 20
   vec_size = 39
-  protohmm "proto", "_proto", num_states, vec_size # name, dir, ns, vs
+  protohmm("_proto", WORDS, num_states, vec_size) # dir, names, dir, ns, vs
 end
 
 desc "hcompv"
 task :hcompv do
-  FileUtils.mkdir_p "_hmm0"
-  #WORDS.each do |w|
-  #  sh "HCompV -m -S _trainlist_even -f 0.01 -M _hmm0 _proto/#{w}"
-  #end
-  #w = WORDS.map{|i| "_proto/#{i}"}.join(" ")
-  #sh "HCompV -m -S _trainlist_even -f 0.01 -M _hmm0 #{w}"
-  sh "HCompV -m -S _trainlist_even -f 0.01 -M _hmm0 _proto/proto"
-  # output: _hmm0/{proto,vFloors}
+  WORDS.each do |w|
+    sh "HCompV -T 15 -m -M _hmm0 -S _script/trainlist0 _proto/#{w}"
+  end
 end
 
-desc "___ hrest"
-task :hrest do
-  FileUtils.mkdir_p "_hmm0"
-  sh "HRest  -L _label -S _trainlist_even -H _proto/one -M _hmm0 -l one one"
-end
+#desc "___ hrest"
+#task :hrest do
+#  sh "HRest  -L _label -S _script/trainlist0 -H _proto/one -M _hmm0 -l one one"
+#end
 
 desc "herest"
 task :herest do
-  FileUtils.mkdir_p "_hmm1"
-  sh "HERest -L _label -S _trainlist_even -d _hmm0 -M _hmm1 -C config.herest models"
+  # sh "HERest -T 7 -L _label -S _script/trainlist0 -d _hmm0 -M _hmm1 -C config.herest models"
+  # output : _hmm1/newMacros
+  sh "HERest -T 7 -L _label -S _script/trainlist0 -d _hmm0 -C config.herest models"
+  # output :
 end
+
