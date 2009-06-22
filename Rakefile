@@ -37,10 +37,10 @@ task :mfcc => [:hcopy_script] do
   sh "HCopy -C config/config.hcopy -S _script/hcopy.script"
 end
 
-desc "trainlist"
-task :trainlist do
-  File.open("_script/trainlist0", "w") do |outfile0|
-    File.open("_script/trainlist1", "w") do |outfile1|
+desc "mfcclist"
+task :mfcclist do
+  File.open("_script/mfcclist0", "w") do |outfile0|
+    File.open("_script/mfcclist1", "w") do |outfile1|
       Dir.glob("_mfcc/*.mfc").sort.each_with_index do |f,i|
         if i % 2 == 0
           outfile0.puts f
@@ -72,7 +72,7 @@ end
 
 desc "___ hinit"
 task :hinit do
-  sh "HInit  -L _label -S _trainlist_even -H _proto/one -M _hmm0 -l one one"
+  sh "HInit  -L _label -S _mfcclist_even -H _proto/one -M _hmm0 -l one one"
 end
 
 desc "create proto"
@@ -85,13 +85,13 @@ end
 desc "hcompv"
 task :hcompv do
   WORDS.each do |w|
-    sh "HCompV -T 15 -m -M _hmm0 -S _script/trainlist0 _proto/#{w}"
+    sh "HCompV -T 15 -m -M _hmm0 -S _script/mfcclist0 _proto/#{w}"
   end
 end
 
 desc "herest"
 task :herest do
-  sh "HERest -T 7 -L _label -S _script/trainlist0 -d _hmm0 -M _hmm1 -C config/config.herest config/models"
+  sh "HERest -T 7 -L _label -S _script/mfcclist0 -d _hmm0 -M _hmm1 -C config/config.herest config/models"
   # output : _hmm1/newMacros
 end
 
@@ -103,7 +103,7 @@ end
 
 desc "hvite"
 task :hvite do
-  sh "HVite -H _hmm1/newMacros -S _script/trainlist1 -L _label -w _script/wdnet -i _recout.mlf config/dict config/models"
+  sh "HVite -H _hmm1/newMacros -S _script/mfcclist1 -L _label -w _script/wdnet -i _recout.mlf config/dict config/models"
 end
 
 desc "hresults"
