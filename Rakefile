@@ -3,7 +3,7 @@
 # 
 
 require 'fileutils'
-require 'protohmm'
+require 'lib/protohmm'
 
 # DATADIR = "../2009jun18/0.7"
 DATADIR = "../../censrec4/clean1"
@@ -34,7 +34,7 @@ end
 
 desc "create mfcc data"
 task :mfcc => [:hcopy_script] do
-  sh "HCopy -C config.hcopy -S _script/hcopy.script"
+  sh "HCopy -C config/config.hcopy -S _script/hcopy.script"
 end
 
 desc "trainlist"
@@ -89,16 +89,25 @@ task :hcompv do
   end
 end
 
-#desc "___ hrest"
-#task :hrest do
-#  sh "HRest  -L _label -S _script/trainlist0 -H _proto/one -M _hmm0 -l one one"
-#end
-
 desc "herest"
 task :herest do
-  # sh "HERest -T 7 -L _label -S _script/trainlist0 -d _hmm0 -M _hmm1 -C config.herest models"
+  sh "HERest -T 7 -L _label -S _script/trainlist0 -d _hmm0 -M _hmm1 -C config/config.herest config/models"
   # output : _hmm1/newMacros
-  sh "HERest -T 7 -L _label -S _script/trainlist0 -d _hmm0 -C config.herest models"
-  # output :
+end
+
+
+desc "wdnet"
+task :wdnet do
+  sh "HParse config/gram _script/wdnet"
+end
+
+desc "hvite"
+task :hvite do
+  sh "HVite -H _hmm1/newMacros -S _script/trainlist1 -L _label -w _script/wdnet -i _recout.mlf config/dict config/models"
+end
+
+desc "hresults"
+task :hresults do
+  #
 end
 
