@@ -1,0 +1,15 @@
+ONE			one
+TWO			two
+THREE			three
+FOUR			four
+FIVE			five
+SIX			six
+SEVEN			seven
+EIGHT			eight
+NINE			nine
+OH			oh
+ZERO			zero
+SENT-END	[]	sil
+SENT-START 	[] 	sil
+
+
