@@ -27,16 +27,6 @@ task :mfcc do
   sh "HCopy -C config.hcopy -S _script/hcopy.script"
 end
 
-desc "create proto"
-task :proto do 
-  FileUtils.mkdir_p "_proto"
-  WORDS.each do |model|
-    num_states = 20
-    vec_size = 39
-    protohmm model, "_proto", num_states, vec_size 
-  end
-end
-
 desc "trainlist"
 task :trainlist do
   File.open("_trainlist_even", "w") do |outfile|
@@ -73,12 +63,23 @@ task :hinit do
   sh "HInit  -L _label -S _trainlist_even -H _proto/one -M _hmm0 -l one one"
 end
 
+desc "create proto"
+task :proto do 
+  num_states = 20
+  vec_size = 39
+  protohmm "proto", "_proto", num_states, vec_size # name, dir, ns, vs
+end
+
 desc "hcompv"
 task :hcompv do
   FileUtils.mkdir_p "_hmm0"
-  WORDS.each do |w|
-    sh "HCompV -m -S _trainlist_even -M _hmm0 _proto/#{w}"
-  end
+  #WORDS.each do |w|
+  #  sh "HCompV -m -S _trainlist_even -f 0.01 -M _hmm0 _proto/#{w}"
+  #end
+  #w = WORDS.map{|i| "_proto/#{i}"}.join(" ")
+  #sh "HCompV -m -S _trainlist_even -f 0.01 -M _hmm0 #{w}"
+  sh "HCompV -m -S _trainlist_even -f 0.01 -M _hmm0 _proto/proto"
+  # output: _hmm0/{proto,vFloors}
 end
 
 desc "___ hrest"

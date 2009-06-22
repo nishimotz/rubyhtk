@@ -4,7 +4,6 @@ def protohmm(name, dir, num_states, vec_size)
   File.open("#{dir}/#{name}", "w") do |outfile|
     outfile.puts <<DOC
 ~o <VecSize> #{vec_size} <MFCC_D_A_0>
-~h "#{name}"
 <BeginHMM>
 <NumStates> #{num_states}
 DOC
