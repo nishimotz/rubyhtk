@@ -8,7 +8,7 @@ require 'lib/fname2lab'
 require 'lib/model'
 require 'config/task'
 
-task :default => [:dir, :mfcc, :mfcclist, :label] do end
+task :default => [:dir, :mfcc, :mfcclist, :label, :wdnet] do end
 
 task :clean do
   sh "rm -rf _*"
@@ -20,9 +20,6 @@ task :dir do
   FileUtils.mkdir_p "_mfcc"
   FileUtils.mkdir_p "_label_wd"
   FileUtils.mkdir_p "_label_ph"
-  FileUtils.mkdir_p "_proto"
-  FileUtils.mkdir_p "_hmm0"
-  FileUtils.mkdir_p "_hmm1"
 end
 
 desc "create hcopy.script"
@@ -70,22 +67,20 @@ task :train do
   data   = "_script/mfcclist0"
   label  = "_label_ph"
 
-  proto = Model.new.proto
+  proto = Model.proto
   m0 = Model.new.compv(proto, data)
   m1 = Model.new.erest(m0, data, label)
   m2 = Model.new.mixup1(m1)
   m3 = Model.new.mixup2(m2, data, label)
-  puts m3
+  m4 = Model.new.mixup1(m3)
+  m5 = Model.new.mixup2(m4, data, label)
+  puts m5
 end
 
-desc "hvite"
 task :hvite do
-  dir = "_hmm4"
-  sh "HVite -H #{dir}/newMacros -S _script/mfcclist1 -L _label -w _script/wdnet -i _recout.mlf config/dict config/models"
+  Model.new("_hmm6").vite("_script/mfcclist1", "_recout.mlf")
 end
 
-desc "hresults"
 task :hresults do
   sh "HResults -L _label_wd config/models _recout.mlf"
 end
-

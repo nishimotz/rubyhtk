@@ -1,14 +1,31 @@
 #!/usr/bin/ruby -Ku
 
 class Model
-  @@count = -1
+  @@count = 0
 
   def self.new_dir
     @@count += 1
     "_hmm#{@@count}"
   end
 
+  def self.proto
+    Model.new.proto
+  end
+
   attr_reader :dir
+
+  def initialize(dir = nil)
+    if dir == nil
+      @dir = Model.new_dir
+      FileUtils.mkdir_p @dir
+    else
+      @dir = dir
+    end
+  end
+
+  def to_s
+    "Model in #{@dir}"
+  end
 
   def sh(s) system(s) end
   #def sh(s) puts(s) end
@@ -47,12 +64,8 @@ class Model
     self
   end
 
-  def initialize
-    @dir = Model.new_dir
-    FileUtils.mkdir_p @dir
+  def vite(data, recout)
+    sh "HVite -H #{@dir}/newMacros -S #{data} -w _script/wdnet -i #{recout} config/dict config/models"
   end
 
-  def to_s
-    "Model in #{@dir}"
-  end
 end
