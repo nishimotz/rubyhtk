@@ -7,7 +7,8 @@ require 'lib/protohmm'
 require 'lib/fname2lab'
 
 # DATADIR = "../2009jun18/0.7"
-DATADIR = "../../censrec4/clean1"
+# DATADIR = "../../censrec4/clean1"
+DATADIR = "../clean1"
 
 WORDS = %w(one two three four five six seven eight nine oh zero sil)
 
@@ -81,8 +82,19 @@ end
 
 desc "herest"
 task :herest do
-  sh "HERest -T 7 -L _label_ph -S _script/mfcclist0 -d _hmm0 -M _hmm1 -C config/config.herest config/models"
+  sh "HERest -L _label_ph -S _script/mfcclist0 -d _hmm0 -M _hmm1 -C config/config.herest -s _hmm1/stats config/models"
   # output : _hmm1/newMacros
+end
+
+task :mixup do
+  File.open("_script/mixup.hed", "w") do |f|
+    f.puts "LS _hmm1/stats"
+    f.puts "MU +1 {*.state[2-19].mix}"
+  end
+  FileUtils.mkdir_p "_hmm2"
+  sh "HHEd -H _hmm1/newMacros -M _hmm2 _script/mixup.hed config/models"
+  FileUtils.mkdir_p "_hmm3"
+  sh "HERest -L _label_ph -S _script/mfcclist0 -H _hmm2/newMacros -M _hmm3 -C config/config.herest -s _hmm3/stats config/models"
 end
 
 desc "wdnet"
@@ -92,7 +104,7 @@ end
 
 desc "hvite"
 task :hvite do
-  sh "HVite -H _hmm1/newMacros -S _script/mfcclist1 -L _label -w _script/wdnet -i _recout.mlf config/dict config/models"
+  sh "HVite -H _hmm3/newMacros -S _script/mfcclist1 -L _label -w _script/wdnet -i _recout.mlf config/dict config/models"
 end
 
 desc "hresults"
