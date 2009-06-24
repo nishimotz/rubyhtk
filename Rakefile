@@ -5,14 +5,14 @@
 require 'fileutils'
 require 'lib/protohmm'
 require 'lib/fname2lab'
+require 'lib/model'
+require 'config/task'
 
-# DATADIR = "../2009jun18/0.7"
-# DATADIR = "../../censrec4/clean1"
-DATADIR = "../clean1"
+task :default => [:dir, :mfcc, :mfcclist, :label] do end
 
-WORDS = %w(one two three four five six seven eight nine oh zero sil)
-
-# task :default => [:hcopy_script] do end
+task :clean do
+  sh "rm -rf _*"
+end
 
 desc "prepare directories"
 task :dir do 
@@ -61,45 +61,27 @@ task :label do
   fname2lab_wd
 end
 
-desc "create proto"
-task :proto do 
-  num_states = 20
-  vec_size = 39
-  protohmm("_proto", WORDS, num_states, vec_size) # dir, names, dir, ns, vs
-end
-
-desc "hcompv"
-task :hcompv do
-  WORDS.each do |w|
-    sh "HCompV -T 15 -m -M _hmm0 -S _script/mfcclist0 _proto/#{w}"
-  end
-end
-
-desc "herest"
-task :herest do
-  sh "HERest -L _label_ph -S _script/mfcclist0 -d _hmm0 -M _hmm1 -C config/config.herest -s _hmm1/stats config/models"
-  # output : _hmm1/newMacros
-end
-
-task :mixup do
-  File.open("_script/mixup.hed", "w") do |f|
-    f.puts "LS _hmm1/stats"
-    f.puts "MU +1 {*.state[2-19].mix}"
-  end
-  FileUtils.mkdir_p "_hmm2"
-  sh "HHEd -H _hmm1/newMacros -M _hmm2 _script/mixup.hed config/models"
-  FileUtils.mkdir_p "_hmm3"
-  sh "HERest -L _label_ph -S _script/mfcclist0 -H _hmm2/newMacros -M _hmm3 -C config/config.herest -s _hmm3/stats config/models"
-end
-
 desc "wdnet"
 task :wdnet do
   sh "HParse config/gram _script/wdnet"
 end
 
+task :train do 
+  data   = "_script/mfcclist0"
+  label  = "_label_ph"
+
+  proto = Model.new.proto
+  m0 = Model.new.compv(proto, data)
+  m1 = Model.new.erest(m0, data, label)
+  m2 = Model.new.mixup1(m1)
+  m3 = Model.new.mixup2(m2, data, label)
+  puts m3
+end
+
 desc "hvite"
 task :hvite do
-  sh "HVite -H _hmm3/newMacros -S _script/mfcclist1 -L _label -w _script/wdnet -i _recout.mlf config/dict config/models"
+  dir = "_hmm4"
+  sh "HVite -H #{dir}/newMacros -S _script/mfcclist1 -L _label -w _script/wdnet -i _recout.mlf config/dict config/models"
 end
 
 desc "hresults"
