@@ -61,11 +61,6 @@ task :label do
   fname2lab_wd
 end
 
-#desc "___ hinit"
-#task :hinit do
-#  sh "HInit  -L _label -S _mfcclist_even -H _proto/one -M _hmm0 -l one one"
-#end
-
 desc "create proto"
 task :proto do 
   num_states = 20
