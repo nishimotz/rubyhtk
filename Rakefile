@@ -75,6 +75,6 @@ task :hvite do
 end
 
 task :hresults do
-  sh "HResults -L _label_wd config/models _recout.mlf > _eval"
+  sh "HResults -f -L _label_wd config/models _recout.mlf > _eval"
   sh "cat _eval"
 end
