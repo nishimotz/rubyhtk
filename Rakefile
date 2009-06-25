@@ -74,7 +74,9 @@ task :train do
   m3 = Model.new.mixup2(m2, data, label)
   m4 = Model.new.mixup1(m3)
   m5 = Model.new.mixup2(m4, data, label)
-  puts m5
+
+  # m = Model.proto.compv(data).erest(data,label).mixup(data,label).mixup(data,label)
+  # puts m
 end
 
 task :hvite do
