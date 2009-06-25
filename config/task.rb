@@ -3,3 +3,5 @@ DATADIR = "../../censrec4/clean1"
 # DATADIR = "../clean1"
 
 WORDS = %w(one two three four five six seven eight nine oh zero sil)
+TARGET_NUM_MIXES = 20
+
