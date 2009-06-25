@@ -80,7 +80,7 @@ task :train do
 end
 
 task :hvite do
-  Model.new("_hmm6").vite("_script/mfcclist1", "_recout.mlf")
+  Model.new("_hmm7").vite("_script/mfcclist1", "_recout.mlf")
 end
 
 task :hresults do
