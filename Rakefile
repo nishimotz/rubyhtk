@@ -8,6 +8,7 @@ require 'lib/fname2lab'
 require 'lib/model'
 require 'config/task'
 
+desc "preparations"
 task :default => [:dir, :mfcc, :mfcclist, :label, :wdnet] do end
 
 task :clean do
@@ -56,6 +57,7 @@ task :wdnet do
   sh "HParse config/gram _script/wdnet"
 end
 
+desc "train models"
 task :train do 
   data0  = "_script/mfcclist0"
   label  = "_label_ph"
@@ -69,12 +71,21 @@ task :train do
   end
 end
 
+desc "recognize"
 task :hvite do
   last = open("_hmm_last").read.chomp
   Model.new(last).vite("_script/mfcclist1", "_recout.mlf")
 end
 
+desc "evaluate"
 task :hresults do
-  sh "HResults -L _label_wd config/models _recout.mlf > _eval"
+  sh "HResults -f -L _label_wd config/models _recout.mlf > _eval"
   sh "cat _eval"
+end
+
+desc "backup result files (use NAME=xxx)"
+task :backup do
+  name = ENV['NAME']
+  sh "cp _eval #{name}_eval"
+  sh "cp _recout.mlf #{name}_recout.mlf"
 end
