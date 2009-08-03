@@ -62,8 +62,10 @@ task :eval do
   data = ["_script/mfcclist0", "_script/mfcclist1"]
   label  = "_label_ph"
   1.upto(2) do |i|
+    puts "pass #{i}"
     recout = "_recout_cv#{i}.mlf"
     evalout = "_eval_cv#{i}"
+    Evaluation.basedir = "_hmm_cv#{i}"
     Evaluation.mixup_train(data[0], label)
     Evaluation.hvite(data[1], recout)
     Evaluation.hresults(recout, evalout)

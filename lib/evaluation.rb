@@ -1,19 +1,24 @@
 #!/usr/bin/ruby -Ku
 
 class Evaluation 
+  def self.basedir=(dir)
+    @@basedir = dir
+  end
+
   def self.mixup_train(train_data, label)
+    Model.basedir = @@basedir
     models = []
     models << Model.first_train(train_data, label)
     while models.last.num_mixes < TARGET_NUM_MIXES
       models << models.last.mixup_train(train_data, label)
     end
-    File.open("_hmm_last", "w") do |f|
+    File.open("#{@@basedir}/_hmm_last", "w") do |f|
       f.puts models.last.dir
     end
   end
 
   def self.hvite(eval_data, recout)
-    last = open("_hmm_last").read.chomp
+    last = open("#{@@basedir}/_hmm_last").read.chomp
     Model.new(last).vite(eval_data, recout)
   end
 
