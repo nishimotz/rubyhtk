@@ -1,12 +1,17 @@
 #!/usr/bin/ruby -Ku
-# Rakefile
-# 
+# rakefile.rb
+# rubyhtk by Takuya Nishimoto (nishimotz)
 
 require 'fileutils'
 require 'lib/protohmm'
 require 'lib/fname2lab'
 require 'lib/model'
+require 'lib/evaluation'
 require 'config/task'
+require 'env'
+require 'logger'
+
+log = Logger.new("_logfile.log")
 
 desc "preparations"
 task :default => [:dir, :mfcc, :mfcclist, :label, :wdnet] do end
@@ -57,35 +62,19 @@ task :wdnet do
   sh "HParse config/gram _script/wdnet"
 end
 
-desc "train models"
-task :train do 
-  data0  = "_script/mfcclist0"
+desc "train models and evaluate"
+task :eval => [:dir, :mfcc, :mfcclist, :label, :wdnet] do 
+  data = ["_script/mfcclist0", "_script/mfcclist1"]
   label  = "_label_ph"
-  models = []
-  models << Model.first_train(data0,label)
-  while models.last.num_mixes < TARGET_NUM_MIXES
-    models << models.last.mixup_train(data0,label)
+  1.upto(2) do |i|
+    puts "pass #{i}"
+    recout = "_recout_cv#{i}.mlf"
+    evalout = "_eval_cv#{i}"
+    Evaluation.basedir = "_hmm_cv#{i}"
+    Evaluation.mixup_train(data[0], label)
+    Evaluation.hvite(data[1], recout)
+    Evaluation.hresults(recout, evalout)
+    data = data.unshift.push(data.shift) # [1,2,3,4] => [2,3,4,1]
   end
-  File.open("_hmm_last", "w") do |f|
-    f.puts models.last.dir
-  end
 end
 
-desc "recognize"
-task :hvite do
-  last = open("_hmm_last").read.chomp
-  Model.new(last).vite("_script/mfcclist1", "_recout.mlf")
-end
-
-desc "evaluate"
-task :hresults do
-  sh "HResults -f -L _label_wd config/models _recout.mlf > _eval"
-  sh "cat _eval"
-end
-
-desc "backup result files (use NAME=xxx)"
-task :backup do
-  name = ENV['NAME']
-  sh "cp _eval #{name}_eval"
-  sh "cp _recout.mlf #{name}_recout.mlf"
-end

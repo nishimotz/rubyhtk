@@ -3,10 +3,19 @@
 
 class Model
   @@count = 0
+  @@basedir = "_hmm"
+
+  def self.basedir=(dir)
+    @@basedir = dir
+  end
+
+  def self.reset
+    @@count = 0
+  end
 
   def self.new_dir
     @@count += 1
-    "_hmm/#{@@count}"
+    "#{@@basedir}/#{@@count}"
   end
 
   def self.proto
