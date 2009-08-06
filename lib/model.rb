@@ -9,6 +9,10 @@ class Model
     @@basedir = dir
   end
 
+  def self.reset
+    @@count = 0
+  end
+
   def self.new_dir
     @@count += 1
     "#{@@basedir}/#{@@count}"

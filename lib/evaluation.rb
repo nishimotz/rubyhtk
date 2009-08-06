@@ -6,6 +6,7 @@ class Evaluation
   end
 
   def self.mixup_train(train_data, label)
+    Model.reset
     Model.basedir = @@basedir
     models = []
     models << Model.first_train(train_data, label)

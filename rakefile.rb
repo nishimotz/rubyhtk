@@ -1,6 +1,6 @@
 #!/usr/bin/ruby -Ku
-# Rakefile
-# 
+# rakefile.rb
+# rubyhtk by Takuya Nishimoto (nishimotz)
 
 require 'fileutils'
 require 'lib/protohmm'
@@ -9,6 +9,9 @@ require 'lib/model'
 require 'lib/evaluation'
 require 'config/task'
 require 'env'
+require 'logger'
+
+log = Logger.new("_logfile.log")
 
 task :default => [:dir, :mfcc, :mfcclist, :label, :wdnet] do end
 
@@ -58,7 +61,7 @@ task :wdnet do
   sh "HParse config/gram _script/wdnet"
 end
 
-task :eval do 
+task :eval => [:dir, :mfcc, :mfcclist, :label, :wdnet] do 
   data = ["_script/mfcclist0", "_script/mfcclist1"]
   label  = "_label_ph"
   1.upto(2) do |i|
