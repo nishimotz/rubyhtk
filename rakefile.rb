@@ -2,7 +2,6 @@
 # rakefile.rb
 # rubyhtk by Takuya Nishimoto (nishimotz)
 
-require 'logger'
 require 'fileutils'
 require 'lib/protohmm'
 require 'lib/fname2lab'
@@ -10,13 +9,12 @@ require 'lib/model'
 require 'lib/evaluation'
 require 'config/task'
 require 'env'
+require 'logger'
 
 log = Logger.new("_logfile.log")
 
-desc "preparations"
 task :default => [:dir, :mfcc, :mfcclist, :label, :wdnet] do end
 
-desc "clean temp files"
 task :clean do
   sh "rm -rf _*"
 end
@@ -63,12 +61,11 @@ task :wdnet do
   sh "HParse config/gram _script/wdnet"
 end
 
-desc "train models and evaluate"
 task :eval => [:dir, :mfcc, :mfcclist, :label, :wdnet] do 
   data = ["_script/mfcclist0", "_script/mfcclist1"]
   label  = "_label_ph"
   1.upto(2) do |i|
-    log.info "pass #{i}"
+    puts "pass #{i}"
     recout = "_recout_cv#{i}.mlf"
     evalout = "_eval_cv#{i}"
     Evaluation.basedir = "_hmm_cv#{i}"
@@ -78,4 +75,3 @@ task :eval => [:dir, :mfcc, :mfcclist, :label, :wdnet] do
     data = data.unshift.push(data.shift) # [1,2,3,4] => [2,3,4,1]
   end
 end
-
